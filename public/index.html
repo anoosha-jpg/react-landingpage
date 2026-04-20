@@ -10,34 +10,133 @@
       content="Web site created using create-react-app"
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <title>SoftLand</title>
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <!-- libraries link -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Raleway:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+  
+<!-- Back to top -->
+<button id="back-top" aria-label="Back to top"><i class="bi bi-chevron-up"></i></button>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+<script>
+  /* ── Year ── */
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  /* ── Navbar scroll ── */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  /* ── Active nav link ── */
+  const navLinks = document.querySelectorAll('#navbar .nav-link:not(.nav-cta)');
+  const sections = ['hero','about','features','how','testimonials','pricing','faq','contact'];
+  window.addEventListener('scroll', () => {
+    let current = 'hero';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.offsetTop - 130) current = id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  });
+
+  /* ── Smooth scroll for all anchor links ── */
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth' });
+        // Close mobile menu if open
+        const collapse = document.getElementById('navMenu');
+        if (collapse.classList.contains('show')) {
+          bootstrap.Collapse.getInstance(collapse)?.hide();
+        }
+      }
+    });
+  });
+
+  /* ── Back to top ── */
+  const backTop = document.getElementById('back-top');
+  window.addEventListener('scroll', () => backTop.classList.toggle('show', window.scrollY > 400));
+  backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  /* ── Pricing toggle ── */
+  const toggle   = document.getElementById('billingToggle');
+  const mLabel   = document.getElementById('monthlyLabel');
+  const aLabel   = document.getElementById('annualLabel');
+  const amounts  = document.querySelectorAll('.amount');
+  let   annual   = false;
+
+  function updatePricing() {
+    amounts.forEach(el => {
+      el.textContent = annual ? el.dataset.annual : el.dataset.monthly;
+    });
+    toggle.classList.toggle('on', annual);
+    mLabel.classList.toggle('active', !annual);
+    aLabel.style.fontWeight = annual ? '700' : '400';
+    aLabel.style.color = annual ? 'var(--primary)' : 'var(--gray)';
+    mLabel.style.fontWeight = !annual ? '700' : '400';
+    mLabel.style.color = !annual ? 'var(--primary)' : 'var(--gray)';
+  }
+
+  toggle.addEventListener('click', () => { annual = !annual; updatePricing(); });
+  toggle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { annual = !annual; updatePricing(); } });
+
+  /* ── Contact form ── */
+  document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const success = document.getElementById('formSuccess');
+    success.classList.add('show');
+    this.reset();
+    setTimeout(() => success.classList.remove('show'), 5000);
+  });
+
+  /* ── Newsletter ── */
+  document.getElementById('nlBtn').addEventListener('click', () => {
+    const email = document.getElementById('nlEmail').value.trim();
+    if (email && email.includes('@')) {
+      document.getElementById('newsletterWrap').style.display = 'none';
+      document.getElementById('nlSuccess').style.display = 'block';
+    }
+  });
+
+  /* ── Scroll-reveal (IntersectionObserver) ── */
+  const revealStyle = document.createElement('style');
+  revealStyle.textContent = `
+    .reveal { opacity:0; transform:translateY(28px); transition:opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity:1; transform:none; }
+  `;
+  document.head.appendChild(revealStyle);
+
+  document.querySelectorAll(
+    '.feature-card, .t-card, .p-card, .step-item, .contact-info-card, .about-content, .about-img-wrap, .section-title'
+  ).forEach((el, i) => {
+    el.classList.add('reveal');
+    el.style.transitionDelay = (i % 4) * 0.08 + 's';
+  });
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
   </body>
 </html>
